@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="color-scheme" content="light dark">
 <title>SilvaBarber</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -18,6 +19,7 @@
   [data-theme=dark]{--bg:#000;--card:#1c1c1e;--soft:#2c2c2e;--line:#38383a;--txt:#f2f2f7;--mut:#8e8e93;
         --red:#e0566a;--red2:#9b1c2e;--bar:#e0566a;--sh:none;color-scheme:dark}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{background:var(--bg)}
   body{margin:0;background:var(--bg);color:var(--txt);font:16px -apple-system,system-ui,sans-serif;letter-spacing:-.01em;
        padding:env(safe-area-inset-top) 18px calc(180px + env(safe-area-inset-bottom));transition:background .2s}
   header{display:flex;justify-content:space-between;align-items:center;padding:18px 0 4px}
@@ -122,7 +124,7 @@
 </head>
 <body>
 <header>
-  <div class="brand"><img src="logo.svg" class="logo" alt=""><div style="min-width:0"><h1>Silva<span>Barber</span></h1><div class="sub" id="fecha"></div></div></div>
+  <div class="brand"><div style="min-width:0"><h1>Silva<span>Barber</span></h1><div class="sub" id="fecha"></div></div></div>
   <button class="avatar" id="avBtn" onclick="openPerfil()" aria-label="Perfil"></button>
 </header>
 <div class="pole"></div>
@@ -201,7 +203,7 @@
     </div>
     <div class="row">
       <div><label>Fecha</label><input id="fFec" type="date"></div>
-      <div><label>Hora</label><input id="fHor" type="time"></div>
+      <div><label>Hora</label><select id="fHor"></select></div>
     </div>
     <label>Nota</label>
     <textarea id="fNot" rows="2" placeholder="Opcional"></textarea>
@@ -433,19 +435,28 @@ $('serChips').onclick=e=>{
 function marcarChips(){const sel=$('fSer').value.split(' + ').map(s=>s.trim());
   document.querySelectorAll('#serChips button').forEach(b=>b.classList.toggle('on',sel.includes(b.dataset.n)))}
 $('fSer').oninput=marcarChips;
+// Horas cada 30 min (08:00 a 23:30)
+const HORAS=[];for(let h=8;h<24;h++)HORAS.push(`${pad(h)}:00`,`${pad(h)}:30`);
+function horaRedonda(){const d=new Date();let m=d.getHours()*60+d.getMinutes();m=Math.round(m/30)*30;
+  return `${pad(Math.min(Math.floor(m/60),23))}:${m%60?'30':'00'}`}
+function setHora(v){
+  const ops=[...HORAS];if(v&&!ops.includes(v)){ops.push(v);ops.sort()}   // conserva horas antiguas tipo 17:40
+  $('fHor').innerHTML='<option value="">Sin hora</option>'+ops.map(h=>`<option value="${h}">${h}</option>`).join('');
+  $('fHor').value=v||'';
+}
 function openForm(id,t){
   editId=id||null;const c=cortes.find(x=>x.id===id), now=new Date();
   $('fCli').value=c?.cliente||'';$('fSer').value=c?.servicio||'';$('fPre').value=c?.precio||'';
   $('fPag').value=c?.pago||'Efectivo';
   $('fFec').value=c?.fecha||(t==='cita'?addD(hoy(),1):hoy());
-  $('fHor').value=c?.hora||(t==='cita'?'':`${pad(now.getHours())}:${pad(now.getMinutes())}`);
+  setHora(c?.hora||(t==='cita'?'':horaRedonda()));
   $('fNot').value=c?.nota||'';$('fDel').style.display=c?'block':'none';
   setTipo(c?(c.cita?'cita':'corte'):t||'corte');marcarChips();
   openSheet('formSheet');
 }
 function marcarHecho(){
   const now=new Date();setTipo('corte');$('fFec').value=hoy();
-  if(!$('fHor').value)$('fHor').value=`${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  if(!$('fHor').value)setHora(horaRedonda());
   $('fHecho').style.display='none';
 }
 function openSheet(id){$(id).classList.add('open');document.body.classList.add('lock')}
@@ -463,7 +474,9 @@ function del(){if(confirm('¿Eliminar?')){cortes=cortes.filter(x=>x.id!==editId)
 
 // ---------- perfil y ajustes ----------
 const inicial=n=>(n||'').trim()[0]?.toUpperCase()||'?';
-function pintarAvatar(el,foto,nom){el.style.backgroundImage=foto?`url(${foto})`:'';el.textContent=foto?'':inicial(nom)}
+const PERSONA='<svg viewBox="0 0 24 24" width="55%" height="55%" fill="#fff"><circle cx="12" cy="8" r="4"/><path d="M4 21c.8-4 4-6.5 8-6.5s7.2 2.5 8 6.5z"/></svg>';
+function pintarAvatar(el,foto,nom){el.style.backgroundImage=foto?`url(${foto})`:'';el.innerHTML=foto?'':(nom||'').trim()?inicial(nom):PERSONA;
+  el.style.display='flex';el.style.alignItems='center';el.style.justifyContent='center'}
 function pintarPerfil(){
   pintarAvatar($('avBtn'),perfil.foto,perfil.nombre);
   const t=new Date().toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'});

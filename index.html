@@ -278,7 +278,7 @@ function grupoDias(arr,asc){
     .map(([f,l])=>[f,l.sort((x,y)=>asc?(x.hora||'').localeCompare(y.hora||''):(y.hora||'').localeCompare(x.hora||''))]);
 }
 function haceTxt(d){
-  if(d<=0)return'Vino hoy';if(d===1)return'No viene desde ayer';
+  if(d<0)return'';if(d===0)return'Vino hoy';if(d===1)return'No viene desde ayer';
   if(d<14)return`No viene hace ${d} días`;if(d<60)return`No viene hace ${Math.floor(d/7)} semanas`;
   return`No viene hace ${Math.floor(d/30)} meses`;
 }
@@ -352,33 +352,42 @@ function renderAgenda(){
   }).join(''):'<p class="empty">No tienes citas agendadas.<br>Toca + para agendar una.</p>';
 }
 
+// Clientes: visitas = cortes hechos; las citas futuras se muestran aparte
 function clientesData(){
-  const m={};
-  hechos().forEach(c=>{if(!c.cliente)return;const k=c.cliente.trim().toLowerCase();
-    (m[k]??={nombre:c.cliente.trim(),lista:[]}).lista.push(c)});
-  return Object.values(m).map(x=>{x.lista.sort((a,b)=>(b.fecha+b.hora).localeCompare(a.fecha+a.hora));x.ult=x.lista[0];return x})
-    .sort((a,b)=>b.ult.fecha.localeCompare(a.ult.fecha));
+  const m={}, h=hoy();
+  cortes.forEach(c=>{const n=(c.cliente||'').trim();if(!n)return;const k=n.toLowerCase();
+    const x=(m[k]??={nombre:n,lista:[],citas:[]});(c.cita?x.citas:x.lista).push(c)});
+  return Object.values(m).map(x=>{
+    x.lista.sort((a,b)=>(b.fecha+(b.hora||'')).localeCompare(a.fecha+(a.hora||'')));x.ult=x.lista[0];
+    x.prox=x.citas.filter(c=>c.fecha>=h).sort((a,b)=>(a.fecha+(a.hora||'')).localeCompare(b.fecha+(b.hora||'')))[0];
+    return x}).sort((a,b)=>((b.ult||b.prox).fecha).localeCompare((a.ult||a.prox||{fecha:''}).fecha));
+}
+function cuandoCita(c){const d=diff(c.fecha,hoy());return (d===0?'hoy':d===1?'mañana':fCorta(c.fecha))+(c.hora?' '+c.hora:'')}
+function estadoCliente(x){
+  if(!x.ult)return{txt:'Primera vez',r:false};
+  const d=diff(hoy(),x.ult.fecha);return{txt:haceTxt(d),r:d>=30&&!x.prox};
 }
 function renderClientes(){
-  const q=$('buscar').value.trim().toLowerCase(), h=hoy();
+  const q=$('buscar').value.trim().toLowerCase();
   const l=clientesData().filter(x=>x.nombre.toLowerCase().includes(q));
-  $('cliList').innerHTML=l.length?l.map(x=>{const d=diff(h,x.ult.fecha);return `<div class="item" data-cli="${esc(x.nombre.toLowerCase())}">
-    <div style="min-width:0"><div class="n">${esc(x.nombre)}</div><div class="s">${x.lista.length} visita${x.lista.length>1?'s':''} · ${esc(x.ult.servicio||'')}</div></div>
-    <div class="since ${d>=30?'r':''}">${haceTxt(d)}</div></div>`}).join('')
+  $('cliList').innerHTML=l.length?l.map(x=>{const e=estadoCliente(x);
+    const sub=x.ult?`${x.lista.length} visita${x.lista.length>1?'s':''} · ${esc(x.ult.servicio||'')}`:'Sin visitas aún';
+    return `<div class="item" data-cli="${esc(x.nombre.toLowerCase())}">
+    <div style="min-width:0"><div class="n">${esc(x.nombre)}</div><div class="s">${sub}</div></div>
+    <div class="since ${e.r?'r':''}">${e.txt}${x.prox?`<br><span style="color:var(--red);font-weight:600">Cita ${cuandoCita(x.prox)}</span>`:''}</div></div>`}).join('')
     :'<p class="empty">Aún no hay clientes.<br>Aparecen solos al registrar cortes con nombre.</p>';
 }
 $('buscar').oninput=renderClientes;
 function openCliente(k){
   const x=clientesData().find(c=>c.nombre.toLowerCase()===k);if(!x)return;
-  const prox=citas().filter(c=>(c.cliente||'').trim().toLowerCase()===k).sort((a,b)=>a.fecha.localeCompare(b.fecha))[0];
-  const d=diff(hoy(),x.ult.fecha);
+  const e=estadoCliente(x);
   $('cliPanel').innerHTML=`<h2 style="margin-bottom:2px">${esc(x.nombre)}</h2>
-    <div class="since ${d>=30?'r':''}" style="text-align:left;margin-bottom:12px">${haceTxt(d)} · último: ${fCorta(x.ult.fecha)}</div>
+    <div class="since ${e.r?'r':''}" style="text-align:left;margin-bottom:12px">${e.txt}${x.ult?` · último: ${fCorta(x.ult.fecha)}`:''}</div>
     <div class="row" style="margin-bottom:10px"><div class="card" style="background:var(--soft)"><small>Visitas</small><b style="display:block;font-size:22px">${x.lista.length}</b></div>
     <div class="card" style="background:var(--soft)"><small>Total gastado</small><b style="display:block;font-size:22px">${clp(suma(x.lista))}</b></div></div>
-    ${prox?`<div class="banner" style="background:var(--soft);box-shadow:none">📅<div>Próxima cita: <b>${fLarga(prox.fecha)} ${prox.hora||''}</b></div></div>`:''}
+    ${x.prox?`<div class="banner" style="background:var(--soft);box-shadow:none">📅<div>Próxima cita: <b>${fLarga(x.prox.fecha)} ${x.prox.hora||''}</b></div></div>`:''}
     <label>Últimos servicios</label>
-    ${x.lista.slice(0,15).map(c=>`<div class="hist"><div>${esc(c.servicio||'—')}<br><span>${fLarga(c.fecha)}</span></div><b>${clp(c.precio)}</b></div>`).join('')}
+    ${x.lista.length?x.lista.slice(0,15).map(c=>`<div class="hist"><div>${esc(c.servicio||'—')}<br><span>${fLarga(c.fecha)}</span></div><b>${clp(c.precio)}</b></div>`).join(''):'<p style="color:var(--mut);font-size:14px;margin:4px 0">Todavía no tiene cortes hechos.</p>'}
     <button class="wide cancel" onclick="closeSheet('cliSheet')">Cerrar</button>`;
   openSheet('cliSheet');
 }

@@ -1,5 +1,5 @@
 // SilvaBarber – service worker: funciona sin internet y se actualiza solo
-const C = 'silvabarber-v16';
+const C = 'silvabarber-v18';
 const FILES = ['./', 'index.html', 'manifest.json', 'logo.svg', 'icon-180.png', 'icon-512.png'];
 self.addEventListener('install', e => { self.skipWaiting(); e.waitUntil(caches.open(C).then(c => c.addAll(FILES))); });
 self.addEventListener('activate', e => e.waitUntil(

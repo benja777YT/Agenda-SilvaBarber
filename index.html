@@ -29,6 +29,7 @@
     --pos:#34d399;--posS:rgba(52,211,153,.13);--neg:#fb7185;--negS:rgba(251,113,133,.13);color-scheme:dark}
 
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  [hidden]{display:none!important}
   html{background:var(--bg)}
   body{margin:0;background:var(--bg);color:var(--txt);font:15px Poppins,-apple-system,system-ui,sans-serif;letter-spacing:-.01em;
        -webkit-font-smoothing:antialiased;padding:env(safe-area-inset-top) 18px calc(108px + env(safe-area-inset-bottom));transition:background .3s}
@@ -277,6 +278,30 @@
   .stat2 div{background:var(--input);border-radius:18px;padding:12px 14px}
   .stat2 small{color:var(--mut);font-size:12px}.stat2 b{display:block;font-size:21px;font-weight:600;margin-top:2px}
   .note-p{color:var(--mut);font-size:13.5px;margin:0;line-height:1.5}
+  /* ===== inicio de sesión ===== */
+  #auth{position:fixed;inset:0;z-index:40;background:var(--bg);display:flex;flex-direction:column;align-items:stretch;justify-content:center;
+     padding:calc(30px + env(safe-area-inset-top)) 26px calc(30px + env(safe-area-inset-bottom));overflow:auto;transition:opacity .35s}
+  #auth.hide{opacity:0;pointer-events:none}
+  .a-logo{width:84px;height:84px;border-radius:24px;margin:0 auto 18px;display:block;box-shadow:0 14px 34px -10px rgba(61,99,255,.6)}
+  #auth h1{text-align:center;font-size:28px;font-weight:600;letter-spacing:-.03em;margin:0}
+  #auth .a-sub{text-align:center;color:var(--mut);font-size:13.5px;margin:6px 0 26px}
+  #auth form{display:flex;flex-direction:column}
+  #auth .seg{background:var(--card);margin-bottom:6px}
+  #auth input{background:var(--card)}
+  #auth .save{margin-top:20px;height:56px;border:0;border-radius:999px;font-size:15.5px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:10px}
+  #auth .save:disabled{opacity:.6}
+  .a-err{color:var(--neg);font-size:13px;text-align:center;min-height:18px;margin-top:12px}
+  .a-err.ok{color:var(--pos)}
+  .a-link{background:none;border:0;color:var(--mut);font-size:13px;margin:6px auto 0;padding:8px;text-decoration:underline;text-underline-offset:3px}
+  .a-note{display:flex;gap:10px;align-items:flex-start;background:var(--card);border-radius:18px;padding:12px 14px;margin-top:22px;font-size:12px;color:var(--mut);line-height:1.45}
+  .a-note svg{flex:none;width:20px;height:20px;fill:none;stroke:var(--acc);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-top:1px}
+  .spin{width:20px;height:20px;border-radius:50%;border:2.5px solid currentColor;border-right-color:transparent;animation:rot .7s linear infinite}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  #auth .boot{display:flex;flex-direction:column;align-items:center;gap:22px;color:var(--mut)}
+  .cloud{display:flex;align-items:center;gap:10px;background:var(--input);border-radius:18px;padding:12px 14px;font-size:13.5px}
+  .cloud i{flex:none;width:9px;height:9px;border-radius:50%;background:var(--pos);box-shadow:0 0 0 4px var(--posS)}
+  .cloud i.p{background:var(--yel);box-shadow:0 0 0 4px rgba(255,211,92,.2)}
+  .cloud div{flex:1;min-width:0}.cloud small{display:block;color:var(--mut);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .toast.can{pointer-events:auto}
   .toast{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));z-index:20;display:flex;align-items:center;gap:8px;
      padding:10px 18px 10px 10px;border-radius:999px;font-size:13.5px;font-weight:500;color:var(--invTxt);background:var(--inv);
@@ -356,6 +381,28 @@
   <div class="card"><div class="ch"><h4>Servicios más pedidos</h4></div><div id="resSrv"></div></div>
 </section>
 
+<!-- Inicio de sesión -->
+<div id="auth" hidden>
+  <div class="boot" id="aBoot"><img class="a-logo" src="icon-512.png" alt="" style="margin:0"><div class="spin"></div></div>
+  <div id="aForm" hidden>
+    <img class="a-logo" src="icon-512.png" alt="">
+    <h1>SilvaBarber</h1>
+    <div class="a-sub" id="aSub">Entra para ver tus cortes</div>
+    <form onsubmit="event.preventDefault();authGo()">
+      <div class="seg" id="segAuth"><button type="button" data-m="in" class="on">Entrar</button><button type="button" data-m="up">Crear cuenta</button></div>
+      <label for="aMail">Correo</label>
+      <input id="aMail" type="email" inputmode="email" autocomplete="username" autocapitalize="off" placeholder="tucorreo@gmail.com" required>
+      <label for="aPass">Contraseña</label>
+      <input id="aPass" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres" required minlength="6">
+      <button class="save" id="aBtn" type="submit">Entrar</button>
+      <div class="a-err" id="aErr"></div>
+      <button type="button" class="a-link" id="aReset" onclick="authReset()">¿Olvidaste tu contraseña?</button>
+    </form>
+    <div class="a-note"><svg viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8.5a4 4 0 0 1-.5 9.5z"/></svg>
+      <span>Tus cortes se guardan en la nube. Si borras la app o cambias de teléfono, entras con tu correo y está todo de vuelta.</span></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"><span>✓</span><div id="toastTxt"></div><button id="toastUndo" hidden>Deshacer</button></div>
 <div class="fade-top"></div>
 <div class="fade"></div>
@@ -413,16 +460,25 @@
     <div id="srvList"></div>
     <button class="link" onclick="addSrv()" style="margin:4px 0 0">+ Agregar servicio</button>
     <div class="btns"><button class="save" onclick="guardarPerfil()">Guardar</button></div>
+    <div id="cuentaBox" hidden>
+      <hr>
+      <label>Cuenta</label>
+      <div class="cloud"><i id="cloudDot"></i><div><span id="cloudTxt">Guardado en la nube</span><small id="cloudMail"></small></div></div>
+      <button class="del" style="margin-top:6px" onclick="salir()">Cerrar sesión</button>
+    </div>
     <hr>
     <label>Respaldo</label>
-    <p class="note-p">Tus datos viven solo en este iPhone. Exporta un respaldo de vez en cuando (se guarda en Archivos).<br><b id="ultResp" style="color:var(--txt)"></b></p>
+    <p class="note-p" id="respNota">Tus datos viven solo en este iPhone. Exporta un respaldo de vez en cuando (se guarda en Archivos).<br><b id="ultResp" style="color:var(--txt)"></b></p>
     <div class="btns"><button class="cancel" onclick="exportar()">Exportar</button><button class="cancel" onclick="$('imp').click()">Importar</button></div>
-    <div class="ver">SilvaBarber v3.2</div>
+    <div class="ver">SilvaBarber v4.0</div>
     <input type="file" id="imp" accept=".json,application/json" style="display:none" onchange="importar(this.files[0])">
   </div>
 </div>
 
+<script src="supabase.js"></script>
 <script>
+// ---------- conexión con la nube (Supabase) ----------
+const SUPA = {"url": "https://bnidmjvhgdmuezxjltgr.supabase.co", "key": "sb_publishable_YQkJOS2RXodiFgxtgPeKVw_bFIT2bTt"};   // { url: 'https://xxxx.supabase.co', key: 'clave pública (anon / publishable)' }
 // ---------- íconos ----------
 const IC={
   home:'<path d="M3.5 10.2 12 3.5l8.5 6.7V19a1.5 1.5 0 0 1-1.5 1.5h-4.5v-6h-5v6H5A1.5 1.5 0 0 1 3.5 19z"/>',
@@ -456,7 +512,8 @@ let cortes=load(KEY,[]), perfil=load(PKEY,{}), servicios=load(SKEY,DEF_SRV);
 // arreglos: cortes con fecha futura pasan a citas; pagos con débito pasan a transferencia
 {const h=new Date(),hs=`${h.getFullYear()}-${String(h.getMonth()+1).padStart(2,'0')}-${String(h.getDate()).padStart(2,'0')}`;
  let cambio=false;cortes.forEach(c=>{if(!c.cita&&c.fecha>hs){c.cita=true;cambio=true}if(c.pago==='Débito'){c.pago='Transferencia';cambio=true}});if(cambio)localStorage.setItem(KEY,JSON.stringify(cortes))}
-const guardar=()=>localStorage.setItem(KEY,JSON.stringify(cortes));
+function guardar(){localStorage.setItem(KEY,JSON.stringify(cortes));subirCortes()}
+function guardarPerfilLocal(){localStorage.setItem(PKEY,JSON.stringify(perfil));localStorage.setItem(SKEY,JSON.stringify(servicios));if(typeof subirPerfil==='function')subirPerfil()}
 let vista='inicio', rangoInicio='hoy', diasRes=7, editId=null, tipo='corte', fotoTmp=null, srvTmp=[];
 
 // ---------- utilidades ----------
@@ -818,10 +875,10 @@ function addSrv(){srvTmp.push(['',0]);pintarSrv();$('srvList').lastElementChild.
 function openPerfil(){
   fotoTmp=perfil.foto||null;$('pNom').value=perfil.nombre||'';pintarAvatar($('pFoto'),fotoTmp,perfil.nombre);
   const m=perfil.tema||'auto';document.querySelectorAll('#segTema button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
-  srvTmp=servicios.map(s=>[...s]);pintarSrv();pintarRespaldo();
+  srvTmp=servicios.map(s=>[...s]);pintarSrv();pintarRespaldo();pintarCuenta();
   openSheet('perfilSheet');
 }
-segmento('segTema',b=>{perfil.tema=b.dataset.m;localStorage.setItem(PKEY,JSON.stringify(perfil));aplicarTema()});
+segmento('segTema',b=>{perfil.tema=b.dataset.m;guardarPerfilLocal();aplicarTema()});
 function cargarFoto(f){
   if(!f)return;const img=new Image();
   img.onload=()=>{const c=document.createElement('canvas'),S=300;c.width=c.height=S;const m=Math.min(img.width,img.height);
@@ -832,7 +889,7 @@ function cargarFoto(f){
 function guardarPerfil(){
   perfil={...perfil,nombre:$('pNom').value.trim(),foto:fotoTmp};
   servicios=srvTmp.filter(([n])=>n.trim()).map(([n,p])=>[n.trim(),+p||0]);
-  try{localStorage.setItem(PKEY,JSON.stringify(perfil));localStorage.setItem(SKEY,JSON.stringify(servicios))}
+  try{guardarPerfilLocal()}
   catch{alert('La foto es muy pesada, prueba con otra');return}
   pintarPerfil();pintarChips();closeSheet('perfilSheet');toast('Perfil guardado');
 }
@@ -844,7 +901,7 @@ function pintarRespaldo(){
 async function exportar(){
   const data=JSON.stringify({cortes,servicios,perfil:{nombre:perfil.nombre,tema:perfil.tema}}), name=`silvabarber-${hoy()}.json`;
   const file=new File([data],name,{type:'application/json'});
-  const listo=()=>{perfil.ultResp=hoy();localStorage.setItem(PKEY,JSON.stringify(perfil));pintarRespaldo()};
+  const listo=()=>{perfil.ultResp=hoy();guardarPerfilLocal();pintarRespaldo()};
   if(navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file]});listo();return}catch(e){if(e.name==='AbortError')return}}
   const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;a.click();listo();
 }
@@ -853,10 +910,166 @@ function importar(f){
   r.onload=()=>{try{let d=JSON.parse(r.result);let lista=Array.isArray(d)?d:d.cortes;if(!Array.isArray(lista))throw 0;
     lista=lista.filter(c=>c&&/^\d{4}-\d\d-\d\d$/.test(c.fecha)).map((c,i)=>({...c,id:String(c.id??Date.now().toString(36)+i),precio:+c.precio||0,pago:c.pago==='Débito'?'Transferencia':PAGOS.includes(c.pago)?c.pago:'Efectivo'}));
     if(confirm(`¿Importar ${lista.length} registros? Reemplaza los actuales.`)){
-      cortes=lista;guardar();if(d.servicios){servicios=d.servicios;localStorage.setItem(SKEY,JSON.stringify(servicios));pintarChips()}
+      cortes=lista;guardar();if(d.servicios){servicios=d.servicios;guardarPerfilLocal();pintarChips()}
       render();closeSheet('perfilSheet')}}
     catch{alert('Archivo no válido')}};
   r.readAsText(f);
+}
+
+// ---------- nube: sesión y sincronización ----------
+const NUBE=!!(SUPA.url&&SUPA.key&&window.SB);
+const QKEY='silvabarber_cola';
+let sb=null, uid=null, correo='', synced=new Map(), modoAuth='in', subiendo=false, bajando=false;
+let cola=load(QKEY,[]);   // cambios que faltan subir: {t:'up',c} | {t:'del',id}
+const norm=c=>JSON.stringify([c.id,c.cliente||'',c.servicio||'',+c.precio||0,c.pago||'',c.fecha||'',c.hora||'',c.nota||'',!!c.cita]);
+const fila=c=>({user_id:uid,id:String(c.id),cliente:c.cliente||'',servicio:c.servicio||'',precio:Math.round(+c.precio||0),pago:c.pago||'Efectivo',
+  fecha:c.fecha,hora:c.hora||'',nota:c.nota||'',cita:!!c.cita,updated_at:new Date().toISOString()});
+const deFila=r=>({id:r.id,cliente:r.cliente||'',servicio:r.servicio||'',precio:+r.precio||0,pago:r.pago||'Efectivo',fecha:String(r.fecha).slice(0,10),hora:r.hora||'',nota:r.nota||'',cita:!!r.cita});
+function encolar(ops){
+  const m=new Map(cola.map(o=>[o.t==='up'?o.c.id:o.id,o]));
+  ops.forEach(o=>m.set(o.t==='up'?o.c.id:o.id,o));
+  cola=[...m.values()];localStorage.setItem(QKEY,JSON.stringify(cola));pintarCuenta();
+}
+function subirCortes(){
+  if(!uid)return;
+  const ahora=new Map(cortes.map(c=>[c.id,c])), ops=[];
+  ahora.forEach((c,id)=>{if(synced.get(id)!==norm(c))ops.push({t:'up',c:{...c}})});
+  synced.forEach((_,id)=>{if(!ahora.has(id))ops.push({t:'del',id})});
+  synced=new Map(cortes.map(c=>[c.id,norm(c)]));
+  if(ops.length){encolar(ops);vaciarCola()}
+}
+async function vaciarCola(){
+  if(!uid||subiendo||!cola.length)return;
+  subiendo=true;
+  try{
+    while(cola.length){
+      const lote=cola.slice(0,300), ups=lote.filter(o=>o.t==='up').map(o=>fila(o.c)), dels=lote.filter(o=>o.t==='del').map(o=>String(o.id));
+      if(ups.length){const{error}=await sb.from('cortes').upsert(ups,{onConflict:'user_id,id'});if(error)throw error}
+      if(dels.length){const{error}=await sb.from('cortes').delete().in('id',dels);if(error)throw error}
+      const hechos=new Set(lote);cola=cola.filter(o=>!hechos.has(o));localStorage.setItem(QKEY,JSON.stringify(cola));
+    }
+  }catch(e){console.warn('sin subir',e)}
+  subiendo=false;pintarCuenta();
+}
+async function bajarTodo(migrar){
+  if(!uid||bajando)return;bajando=true;
+  try{
+    await vaciarCola();
+    let srv=[];
+    for(let i=0;;i+=1000){   // Supabase entrega de a 1000 filas
+      const{data,error}=await sb.from('cortes').select('id,cliente,servicio,precio,pago,fecha,hora,nota,cita').order('id').range(i,i+999);
+      if(error)throw error;srv.push(...data.map(deFila));if(data.length<1000)break;
+    }
+    synced=new Map(srv.map(c=>[c.id,norm(c)]));
+    if(migrar){   // primera vez en este teléfono: sube lo que había guardado solo aquí
+      const ids=new Set(srv.map(c=>c.id)), nuevos=migrar.filter(c=>!ids.has(c.id));
+      if(nuevos.length){encolar(nuevos.map(c=>({t:'up',c})));toast(`${nuevos.length} registros subidos a la nube`)}
+      localStorage.setItem('silvabarber_mig_'+uid,'1');
+    }
+    // lo que aún no se sube (sin internet) se aplica encima de lo de la nube
+    const m=new Map(srv.map(c=>[c.id,c]));
+    cola.forEach(o=>o.t==='up'?m.set(o.c.id,o.c):m.delete(o.id));
+    cortes=[...m.values()];
+    localStorage.setItem(KEY,JSON.stringify(cortes));render();
+    // perfil y servicios
+    const{data:pf,error:e2}=await sb.from('perfiles').select('*').maybeSingle();
+    if(e2)throw e2;
+    if(pf){
+      perfil={...perfil,nombre:pf.nombre||perfil.nombre||'',foto:pf.foto||perfil.foto||null,tema:pf.tema||perfil.tema||'auto',ultResp:pf.ult_resp||perfil.ultResp||null};
+      if(Array.isArray(pf.servicios)&&pf.servicios.length)servicios=pf.servicios.map(x=>[x.n,+x.p||0]);
+      localStorage.setItem(PKEY,JSON.stringify(perfil));localStorage.setItem(SKEY,JSON.stringify(servicios));
+      aplicarTema();pintarPerfil();pintarChips();
+      if((!pf.nombre&&perfil.nombre)||!(pf.servicios||[]).length)subirPerfil();
+    }else subirPerfil();
+    await vaciarCola();
+  }catch(e){console.warn('sin bajar',e);if(!navigator.onLine)toast('Sin internet: se sincroniza al volver')}
+  bajando=false;pintarCuenta();
+}
+function subirPerfil(){
+  if(!uid)return;
+  sb.from('perfiles').upsert({user_id:uid,nombre:perfil.nombre||'',foto:perfil.foto||null,tema:perfil.tema||'auto',ult_resp:perfil.ultResp||null,
+    servicios:servicios.map(([n,p])=>({n,p:+p||0})),updated_at:new Date().toISOString()}).then(({error})=>error&&console.warn(error));
+}
+function pintarCuenta(){
+  $('cuentaBox').hidden=!uid;
+  $('respNota').firstChild.textContent=uid?'Tus cortes ya se guardan en la nube. Igual puedes exportar una copia extra si quieres.':'Tus datos viven solo en este iPhone. Exporta un respaldo de vez en cuando (se guarda en Archivos).';
+  if(!uid)return;
+  $('cloudMail').textContent=correo;
+  const p=cola.length;
+  $('cloudDot').className=p?'p':'';
+  $('cloudTxt').textContent=p?`${p} cambio${p>1?'s':''} por subir (sin internet)`:'Todo guardado en la nube';
+}
+function mostrarAuth(modo){ // 'boot' | 'form' | false
+  const a=$('auth');
+  if(!modo){a.classList.add('hide');setTimeout(()=>{a.hidden=true},350);return}
+  a.hidden=false;a.classList.remove('hide');$('aBoot').hidden=modo!=='boot';$('aForm').hidden=modo!=='form';
+  $('aBtn').disabled=false;$('aBtn').textContent=modoAuth==='in'?'Entrar':'Crear cuenta';
+}
+function setModoAuth(m){
+  modoAuth=m;document.querySelectorAll('#segAuth button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  $('aBtn').textContent=m==='in'?'Entrar':'Crear cuenta';$('aReset').hidden=m!=='in';
+  $('aPass').autocomplete=m==='in'?'current-password':'new-password';
+  $('aSub').textContent=m==='in'?'Entra para ver tus cortes':'Crea tu cuenta para guardar todo en la nube';
+  $('aErr').textContent='';
+}
+const ERR={invalid_credentials:'Correo o contraseña incorrectos',user_already_exists:'Ese correo ya tiene cuenta. Toca "Entrar"',
+  weak_password:'La contraseña debe tener al menos 6 caracteres',email_address_invalid:'Ese correo no es válido',validation_failed:'Revisa el correo y la contraseña',
+  email_not_confirmed:'Primero confirma tu cuenta con el correo que te enviamos',over_email_send_rate_limit:'Demasiados correos enviados. Espera unos minutos',
+  over_request_rate_limit:'Demasiados intentos. Espera unos minutos'};
+const errTxt=e=>ERR[e?.code]||(/fetch|network/i.test(e?.message||'')?'Sin conexión a internet':/already/i.test(e?.message)?ERR.user_already_exists:/invalid login/i.test(e?.message)?ERR.invalid_credentials:'Algo falló, intenta de nuevo');
+function msgAuth(t,ok){$('aErr').className='a-err'+(ok?' ok':'');$('aErr').textContent=t}
+async function authGo(){
+  const email=$('aMail').value.trim(), password=$('aPass').value, btn=$('aBtn');
+  msgAuth('');btn.disabled=true;btn.innerHTML='<div class="spin"></div>';
+  const fin=()=>{btn.disabled=false;btn.textContent=modoAuth==='in'?'Entrar':'Crear cuenta'};
+  try{
+    if(modoAuth==='in'){const{error}=await sb.auth.signInWithPassword({email,password});if(error)throw error}
+    else{
+      const{data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});if(error)throw error;
+      if(!data.session){fin();setModoAuth('in');msgAuth('Te enviamos un correo. Confirma tu cuenta y luego toca Entrar',true);return}
+    }
+  }catch(e){msgAuth(errTxt(e));fin()}
+}
+async function authReset(){
+  const email=$('aMail').value.trim();
+  if(!email){msgAuth('Escribe tu correo arriba y toca de nuevo');$('aMail').focus();return}
+  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  error?msgAuth(errTxt(error)):msgAuth('Te enviamos un correo para cambiar la contraseña',true);
+}
+async function salir(){
+  if(cola.length&&!confirm(`Hay ${cola.length} cambio(s) sin subir porque no hay internet. Si cierras sesión se pierden. ¿Cerrar igual?`))return;
+  if(!cola.length&&!confirm('¿Cerrar sesión? Tus cortes quedan guardados en la nube.'))return;
+  closeSheet('perfilSheet');await sb.auth.signOut();
+}
+function conectar(user){
+  uid=user.id;correo=user.email||'';
+  const migrar=localStorage.getItem('silvabarber_mig_'+uid)?null:cortes.slice();
+  mostrarAuth(false);pintarCuenta();bajarTodo(migrar);
+}
+function desconectar(){
+  uid=null;synced=new Map();cola=[];cortes=[];
+  [KEY,QKEY].forEach(k=>localStorage.removeItem(k));render();
+  $('aPass').value='';setModoAuth('in');mostrarAuth('form');
+}
+function iniciarNube(){
+  if(!NUBE)return;
+  sb=SB.createClient(SUPA.url,SUPA.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'silvabarber_sesion'}});
+  document.querySelectorAll('#segAuth button').forEach(b=>b.onclick=()=>setModoAuth(b.dataset.m));
+  mostrarAuth('boot');
+  sb.auth.onAuthStateChange((ev,ses)=>{
+    const u=ses?.user;
+    setTimeout(async()=>{   // fuera del callback, como recomienda Supabase
+      if(ev==='PASSWORD_RECOVERY'){
+        const np=prompt('Escribe tu nueva contraseña (mínimo 6 caracteres)');
+        if(np){const{error}=await sb.auth.updateUser({password:np});alert(error?errTxt(error):'Contraseña cambiada')}
+      }
+      if(u){if(u.id!==uid){if(uid)desconectar();conectar(u)}}
+      else if(uid)desconectar();
+      else if(ev==='INITIAL_SESSION'||ev==='SIGNED_OUT')mostrarAuth('form');
+    },0);
+  });
+  addEventListener('online',()=>bajarTodo());
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&uid)bajarTodo()});
 }
 
 // ---------- inicio ----------
@@ -866,7 +1079,7 @@ let ultimoDia=hoy();
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible'&&hoy()!==ultimoDia){ultimoDia=hoy();pintarPerfil();render()}
 });
-aplicarTema();pintarPerfil();pintarChips();render();
+aplicarTema();pintarPerfil();pintarChips();render();iniciarNube();
 </script>
 </body>
 </html>
